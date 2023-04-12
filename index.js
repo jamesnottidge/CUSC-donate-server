@@ -73,11 +73,14 @@ app.get("/api/transactions", async (req, res) => {
   const allTransactions = [];
   while (pageNumber) {
     await axios
-      .get(`${apiUrl}?status=successful&page=${pageNumber.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-      })
+      .get(
+        `${apiUrl}?from=2023-04-11&status=successful&page=${pageNumber.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      )
       .then((response) => response.data)
       .then((data) => {
         total_pages = Math.ceil(data.meta.page_info.total / 100);
@@ -86,7 +89,6 @@ app.get("/api/transactions", async (req, res) => {
           allTransactions.push(...data.data);
           if (pageNumber === total_pages) {
             pageNumber = false;
-            console.log(allTransactions.length);
             return res.send(allTransactions);
           }
           pageNumber++;
