@@ -112,7 +112,6 @@ app.get("/api/transactions", async (req, res) => {
 				) {
 					allTransactions.push(...data.data);
 					pageNumber = false;
-					console.log(allTransactions.length);
 					return res.send(allTransactions);
 				}
 			})
