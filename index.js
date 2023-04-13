@@ -26,6 +26,11 @@ const apiUrl = "https://api.flutterwave.com/v3/transactions";
 const apiKey = process.env.FLUTIL_API_KEY;
 
 app.get("/api/transactions", async (req, res) => {
+  let cachedTransactions = await readTransactions()
+  res.send(cachedTransactions);
+});
+
+app.get("/api/update", async (req, res) => {
   let pageNumber = 1;
   let total_pages = 0;
   const allTransactions = [];
@@ -42,21 +47,19 @@ app.get("/api/transactions", async (req, res) => {
       .then(async (data) => {
         let flutterwaveTransactionCount = data.meta.page_info.total
         let cacheIsCurrent = await checkCache(flutterwaveTransactionCount)
-        if (cacheIsCurrent) {
-          let cachedTransactions = await readTransactions()
-          pageNumber = false;
-          res.send(cachedTransactions);
-        } else {
-          total_pages = Math.ceil(data.meta.page_info.total / 100);
+        if (!cacheIsCurrent) {
+          total_pages = Math.ceil(data.meta.page_info.total / 10);
+          console.log(total_pages);
+          console.log(data.data.length);
 
-          if (data.data.length > 10) {
+          if (data.data.length < 11) {
             console.log(data.data.length);
             allTransactions.push(...data.data);
             if (pageNumber === total_pages) {
 
               pageNumber = false;
               await insertTransactions(allTransactions);
-              return res.send(allTransactions);
+              return res.json({ "message": "Updated" });
             }
             pageNumber++;
           } else if (
@@ -68,8 +71,10 @@ app.get("/api/transactions", async (req, res) => {
             allTransactions.push(...data.data);
             pageNumber = false;
             await insertTransactions(allTransactions);
-            return res.send(allTransactions);
+            return res.json({ "message": "Updated" });
           }
+        } else {
+          res.json({ "message": "Up to date" })
         }
       })
       .catch(async (error) => {
@@ -80,6 +85,7 @@ app.get("/api/transactions", async (req, res) => {
       });
   }
 });
+
 
 app.listen(4000, () => {
   console.log("server is running");
