@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://studentaffairs.cu.edu.ng/", "https://studentaffairs.cu.edu.ng/"],
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://studentaffairs.cu.edu.ng", "https://studentaffairs.cu.edu.ng"],
   })
 );
 
