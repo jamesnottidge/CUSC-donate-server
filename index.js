@@ -46,14 +46,12 @@ app.get("/api/update", async (req, res) => {
       .then((response) => response.json())
       .then(async (data) => {
         let flutterwaveTransactionCount = data.meta.page_info.total
+
         let cacheIsCurrent = await checkCache(flutterwaveTransactionCount)
         if (!cacheIsCurrent) {
           total_pages = Math.ceil(data.meta.page_info.total / 10);
-          console.log(total_pages);
-          console.log(data.data.length);
 
           if (data.data.length < 11) {
-            console.log(data.data.length);
             allTransactions.push(...data.data);
             if (pageNumber === total_pages) {
 
@@ -66,14 +64,13 @@ app.get("/api/update", async (req, res) => {
             allTransactions.length < data.meta.page_info.total &&
             data.meta.page_info.total_pages == total_pages
           ) {
-            console.log(data.data.length);
-
             allTransactions.push(...data.data);
             pageNumber = false;
             await insertTransactions(allTransactions);
             return res.json({ "message": "Updated" });
           }
         } else {
+          pageNumber = false;
           res.json({ "message": "Up to date" })
         }
       })
@@ -93,22 +90,20 @@ app.listen(4000, () => {
 
 
 async function insertTransactions(data) {
-  for (let transaction of data) {
     // make sure is unique
-    await transactions.insertOne({ ...transaction, "_id": transaction.id }, { upsert: true })
-  }
+
+  await transactions.updateOne({"_id": process.env.DOC_ID}, {$set: {data}}, {upsert: true})
 }
 
 // need to add date field
 async function readTransactions() {
-  let cursor = await transactions.find({})
-  let allTransactions = await cursor.toArray()
-  return allTransactions
+  let doc = await transactions.findOne({"_id": process.env.DOC_ID})
+  return doc.data
 }
 
 async function checkCache(count) {
-  let cursor = await transactions.find({})
-  let cacheCount = await cursor.count()
+  let doc = (await transactions.findOne({"_id": process.env.DOC_ID})) ?? { data: [] }
+  let cacheCount = doc.data.length
   if (cacheCount === count) {
     return true
   } else {
