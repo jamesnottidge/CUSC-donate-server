@@ -32,7 +32,6 @@ const apiKey = process.env.FLUTIL_API_KEY;
 
 app.get("/api/transactions", async (req, res) => {
 	let cachedTransactions = await readTransactions();
-	console.log(cachedTransactions.length);
 	res.send(cachedTransactions);
 });
 
@@ -56,10 +55,8 @@ app.get("/api/update", async (req, res) => {
 				let cacheIsCurrent = await checkCache(flutterwaveTransactionCount);
 				if (!cacheIsCurrent) {
 					total_pages = Math.ceil(data.meta.page_info.total / 10);
-					console.log(total_pages);
 
 					if (data.data.length < 11 && total_pages !== 0) {
-						console.log(`fetching page ${pageNumber}`);
 						allTransactions.push(...data.data);
 						if (pageNumber === total_pages) {
 							pageNumber = false;
