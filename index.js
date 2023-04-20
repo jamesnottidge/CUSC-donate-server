@@ -82,7 +82,7 @@ app.get("/api/update", async (req, res) => {
 				console.log(error);
 				let cachedTransactions = await readTransactions();
 				pageNumber = false;
-				return res.send(cachedTransactions);
+				res.json({ message: "An error occured" });
 			});
 	}
 });
